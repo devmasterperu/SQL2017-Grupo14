@@ -68,3 +68,11 @@ case when estado=1 then 'Zona activa'
 end as [MENSAJE ESTADO]
 from Zona --Zonas
 where codubigeo=1  --Con codigo de ubigeo [1]
+
+select codplan,nombre,preciorefsol,
+case when preciorefsol<=70 then 'Plan de valor bajo'
+     when preciorefsol>70 and preciorefsol<100 then 'Plan de valor medio'
+	 when preciorefsol>=100 then 'Plan de valor alto'
+	 else 'Sin mensaje' 
+end as Mensaje
+from PlanInternet
