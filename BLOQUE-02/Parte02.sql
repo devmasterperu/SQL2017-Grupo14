@@ -76,3 +76,20 @@ case when preciorefsol<=70 then 'Plan de valor bajo'
 	 else 'Sin mensaje' 
 end as Mensaje
 from PlanInternet
+
+--02.03
+
+select * from Ubigeo
+
+--02.04
+declare @tc decimal(6,3)=3.515
+
+select nombre as [PLAN],preciorefsol as PRECIO_SOL,
+cast(round(preciorefsol/@tc,2) as decimal(8,2))as PRECIO_DOL,
+case 
+when preciorefsol>=0 and preciorefsol<70 then '[0,70>'
+when preciorefsol>=70 and preciorefsol<100 then '[70,100>'
+when preciorefsol>=100 then '[100, +>'
+else 'RANGO DESCONOCIDO'
+end as [RANGO SOL]
+from PlanInternet
