@@ -17,3 +17,21 @@ case when cast(round (preciorefsol /@Tipoc,3)as decimal (8,3)) >=0 and cast(roun
 	 end
 	 as [RANGO DOL]
 from PlanInternet
+
+--02.06
+select codzona as CODZONA,nombre as ZONA,codubigeo as [CODIGO UBIGEO],estado as ESTADO,
+case when estado=1 then 'Zona activa'
+     when estado=0 then 'Zona inactiva'
+	 else 'Sin mensaje'
+end as [MENSAJE ESTADO]
+from Zona
+where 
+--a. Estado=1 [Y] codubigeo=1 ordenados por codzona de mayor a menor
+--estado=1 and codubigeo=1 order by codzona desc
+--b. Estado=1 [Y] codubigeo=1 ordenados por nombre alfabéticamente Z-A
+--estado=1 and codubigeo=1 order by nombre desc
+--c. Estado=0 [O] codubigeo=1 ordenados por estado de menor a mayor.
+--estado=0 or codubigeo=1 order by estado asc
+/*d. Estado=1 [O] codubigeo=1 ordenados por codubigeo de mayor a menor en
+1° nivel y nombre de manera alfabética A-Z en 2° nivel.*/
+estado=1 or codubigeo=1 order by codubigeo desc,nombre asc
