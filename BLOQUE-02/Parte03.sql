@@ -34,4 +34,23 @@ where
 --estado=0 or codubigeo=1 order by estado asc
 /*d. Estado=1 [O] codubigeo=1 ordenados por codubigeo de mayor a menor en
 1° nivel y nombre de manera alfabética A-Z en 2° nivel.*/
-estado=1 or codubigeo=1 order by codubigeo desc,nombre asc
+--estado=1 or codubigeo=1 order by codubigeo desc,nombre asc
+/*e. Las zonas que NO cumplan: Estado=1 [Y] codubigeo=1 ordenados por
+codzona de menor a mayor.*/
+NOT (estado=1 and codubigeo=1) order by codzona asc
+
+--02.08
+
+select 
+tipo,
+case when codtipo=3 then 'RUC' else 'OTRO TIPO' end as TIPO_DOC,
+numdoc as NUM_DOC,
+razon_social as RAZON_SOCIAL,
+codzona as CODZONA,
+fec_inicio as FEC_INICIO
+from Cliente
+--where tipo='E' and (codzona=1 or codzona=3 or codzona=5 or codzona=7)
+where tipo='E' and codzona in (1,3,5,7)
+order by razon_social desc
+
+
