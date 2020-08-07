@@ -80,3 +80,20 @@ where tipo='P'
 --and nombres+' '+ape_paterno+' '+ape_materno like '[^aeiou]%[^aeiou]'
 --j.Nombre inicie con una vocal y finalice con una consonante.
 and nombres+' '+ape_paterno+' '+ape_materno like '[aeiou]%[^aeiou]'
+
+--02.11
+
+select codzona as ZONA,estado as ESTADO,
+COUNT(codcliente) as TOT_CLIENTES,
+MIN(fec_inicio) as MIN_FEC_INICIO,
+MAX(fec_inicio) as MAX_FEC_INICIO,
+case when COUNT(codcliente) between 0 and 19 then 'TOTAL_INFERIOR'
+	 when COUNT(codcliente) between 20 and 39 then 'TOTAL_MEDIO'
+	 when COUNT(codcliente)>=40 then 'TOTAL_SUPERIOR'
+     else 'SIN RANGO' 
+end as MENSAJE
+from Cliente 
+where tipo='E'
+group by codzona,estado
+having COUNT(codcliente)>10 --Combinaciones de codzona y estado con total de clientes mayor a 10.
+order by codzona,estado
