@@ -97,3 +97,68 @@ where tipo='E'
 group by codzona,estado
 having COUNT(codcliente)>10 --Combinaciones de codzona y estado con total de clientes mayor a 10.
 order by codzona,estado
+
+--02.13
+select *
+from Cliente 
+where tipo='P'
+
+--NOTA 01
+select top(15) estado as ESTADO,codzona as ZONA,--mostrar las primeras 15 combinaciones
+COUNT(codcliente) as TOT_CLIENTES,
+MIN(ape_paterno) as MIN_FEC_INICIO,--Primer apellido paterno ordenado alfabéticamente A-Z 
+MAX(ape_paterno) as MAX_FEC_INICIO,--Último apellido paterno ordenado alfabéticamente A-Z 
+case when COUNT(codcliente) between 0 and 14 then 'INFERIOR'
+	 when COUNT(codcliente) between 15 and 29 then 'MEDIO'
+	 when COUNT(codcliente)>=30 then 'SUPERIOR'
+     else 'SIN RANGO' 
+end as MENSAJE
+from Cliente 
+where tipo='P'
+group by estado,codzona
+order by TOT_CLIENTES desc
+
+--NOTA 02
+select top(15) percent estado as ESTADO,codzona as ZONA,--mostrar el primer 50% de combinaciones=top(4)=0.15*22=3.3
+COUNT(codcliente) as TOT_CLIENTES,
+MIN(ape_paterno) as MIN_FEC_INICIO,--Primer apellido paterno ordenado alfabéticamente A-Z 
+MAX(ape_paterno) as MAX_FEC_INICIO,--Último apellido paterno ordenado alfabéticamente A-Z 
+case when COUNT(codcliente) between 0 and 14 then 'INFERIOR'
+	 when COUNT(codcliente) between 15 and 29 then 'MEDIO'
+	 when COUNT(codcliente)>=30 then 'SUPERIOR'
+     else 'SIN RANGO' 
+end as MENSAJE
+from Cliente 
+where tipo='P'
+group by estado,codzona
+order by TOT_CLIENTES desc
+
+--NOTA 03
+select top(15) with ties estado as ESTADO,codzona as ZONA,--mostrar las primeras 15 combinaciones incluyendo empates 15° posición
+COUNT(codcliente) as TOT_CLIENTES,
+MIN(ape_paterno) as MIN_APE_PAT,--Primer apellido paterno ordenado alfabéticamente A-Z 
+MAX(ape_paterno) as MAX_APE_PAT,--Último apellido paterno ordenado alfabéticamente A-Z 
+case when COUNT(codcliente) between 0 and 14 then 'INFERIOR'
+	 when COUNT(codcliente) between 15 and 29 then 'MEDIO'
+	 when COUNT(codcliente)>=30 then 'SUPERIOR'
+     else 'SIN RANGO' 
+end as MENSAJE
+from Cliente 
+where tipo='P'
+group by estado,codzona
+order by TOT_CLIENTES desc
+
+--NOTA 04
+select top(40) percent with ties estado as ESTADO,codzona as ZONA,--mostrar el primer 40% combinaciones incluyendo empates última posición 40%
+COUNT(codcliente) as TOT_CLIENTES,
+MIN(ape_paterno) as MIN_APE_PAT,--Primer apellido paterno ordenado alfabéticamente A-Z 
+MAX(ape_paterno) as MAX_APE_PAT,--Último apellido paterno ordenado alfabéticamente A-Z 
+case when COUNT(codcliente) between 0 and 14 then 'INFERIOR'
+	 when COUNT(codcliente) between 15 and 29 then 'MEDIO'
+	 when COUNT(codcliente)>=30 then 'SUPERIOR'
+     else 'SIN RANGO' 
+end as MENSAJE
+from Cliente 
+where tipo='P'
+group by estado,codzona
+order by TOT_CLIENTES desc
