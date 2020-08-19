@@ -54,7 +54,15 @@ order by isnull(p.codplan,0)
 --ALTER TABLE [dbo].[Contrato]  WITH NOCHECK ADD  CONSTRAINT [RefCliente72] FOREIGN KEY([codcliente])
 --REFERENCES [dbo].[Cliente] ([codcliente])
 
-select  *
+select isnull(c.codcliente,0) as CLIENTE_CODCLIENTE,
+		case when c.tipo='E' then isnull(c.razon_social,'SIN_DETALLE')
+			 when c.tipo='P' then isnull(c.nombres+' '+c.ape_paterno+' '+c.ape_materno,'SIN_DETALLE')
+			 else 'SIN_DETALLE' 
+		end  as CLIENTE_NOMBRE,
+		lower(isnull(c.email,'SIN DATO')) as CLIENTE_CORREO,
+		isnull(co.codcliente,0) as CONTRATO_CODCLIENTE,
+		isnull(p.nombre,'SIN DATO') as CONTRATO_PLAN,
+		isnull(co.fec_contrato,'9999-12-31') as CONTRATO_FECHA
 from 
 --mostrarse los clientes independientemente de contar o no con contratos relacionados y 
 --los contratos, independientemente de contar o no con clientes relacionados
