@@ -47,3 +47,24 @@ insert into PlanInternet(descripcion,preciorefsol,nombre,fechoraregistro)
 values ('Solicitado por comité junio 2020.',210.00,'STAR III','2020-08-20 19:37:00.000')
 
 select * from PlanInternet
+
+--04.02
+
+select * from Zona_Carga
+select * from Ubigeo
+
+begin tran --IMPORTANTE
+delete from Zona where codzona>=1012
+rollback   --SIEMPRE_USAR
+
+DBCC CHECKIDENT('Zona',RESEED,22) --RESETEAR VALOR AUTOGENERADO 22
+
+insert into Zona(codubigeo,nombre,estado)
+select u.codubigeo as codubigeo,nombre,1 as estado
+from Zona_Carga zc inner join Ubigeo u 
+on RTRIM(LTRIM(UPPER(zc.departamento)))=RTRIM(LTRIM(UPPER(u.nombre_dpto))) and
+   RTRIM(LTRIM(UPPER(zc.provincia)))=RTRIM(LTRIM(UPPER(u.nombre_prov))) and
+   RTRIM(LTRIM(UPPER(zc.distrito)))=RTRIM(LTRIM(UPPER(u.nombre_dto)))
+where estado='ACTIVO'
+
+select * from Zona
