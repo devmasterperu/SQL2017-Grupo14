@@ -48,7 +48,7 @@ values ('Solicitado por comité junio 2020.',210.00,'STAR III','2020-08-20 19:37:
 
 select * from PlanInternet
 
---04.02
+--04.02.a
 
 select * from Zona_Carga
 select * from Ubigeo
@@ -62,9 +62,57 @@ DBCC CHECKIDENT('Zona',RESEED,22) --RESETEAR VALOR AUTOGENERADO 22
 insert into Zona(codubigeo,nombre,estado)
 select u.codubigeo as codubigeo,nombre,1 as estado
 from Zona_Carga zc inner join Ubigeo u 
-on RTRIM(LTRIM(UPPER(zc.departamento)))=RTRIM(LTRIM(UPPER(u.nombre_dpto))) and
+on RTRIM(LTRIM(UPPER(zc.departamento)))=RTRIM(LTRIM(UPPER(u.nombre_dpto))) and 
    RTRIM(LTRIM(UPPER(zc.provincia)))=RTRIM(LTRIM(UPPER(u.nombre_prov))) and
    RTRIM(LTRIM(UPPER(zc.distrito)))=RTRIM(LTRIM(UPPER(u.nombre_dto)))
 where estado='ACTIVO'
 
+--04.02.b
+
+--create procedure InsZona
+alter procedure InsZona
+as
+select u.codubigeo as codubigeo,nombre,0 as estado
+from Zona_Carga zc inner join Ubigeo u 
+on RTRIM(LTRIM(UPPER(zc.departamento)))=RTRIM(LTRIM(UPPER(u.nombre_dpto))) and 
+   RTRIM(LTRIM(UPPER(zc.provincia)))=RTRIM(LTRIM(UPPER(u.nombre_prov))) and
+   RTRIM(LTRIM(UPPER(zc.distrito)))=RTRIM(LTRIM(UPPER(u.nombre_dto)))
+where estado='INACTIVO'
+
+begin tran --IMPORTANTE
+delete from Zona where codzona>=29
+rollback   --SIEMPRE_USAR
+
+DBCC CHECKIDENT('Zona',RESEED,28) --RESETEAR VALOR AUTOGENERADO 28
+
+insert into Zona(codubigeo,nombre,estado) --Inserte desde 29 hacia adelante
+execute InsZona
+
 select * from Zona
+
+--04.02.c (TAREA)
+
+--04.03
+SET IDENTITY_INSERT dbo.Zona ON; --HABILITA INSERTAR VALORES EN COLUMNAS IDENTITY
+
+insert into Zona(codzona,codubigeo,nombre,estado) values (12,18,'CAJATAMBO-A',1)
+go
+insert into Zona(codzona,codubigeo,nombre,estado) values (13,18,'CAJATAMBO-B',1)
+go
+insert into Zona(codzona,codubigeo,nombre,estado) values (14,18,'CAJATAMBO-C',1)
+go
+
+SET IDENTITY_INSERT dbo.Zona OFF;--DESHABILITA INSERTAR VALORES EN COLUMNAS IDENTITY
+
+select * from Zona
+
+--04.05
+begin tran--COLOCAR_SIEMPRE
+	delete from Telefono
+	where codcliente=18 and tipo<>'LLA'--teléfonos del cliente codcliente=18 y que no sean del tipo ‘LLAMADA’
+rollback --COLOCAR_SIEMPRE
+
+select * from Telefono
+where tipo<>'LLA'
+
+--04.07
