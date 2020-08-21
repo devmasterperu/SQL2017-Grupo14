@@ -116,3 +116,35 @@ select * from Telefono
 where tipo<>'LLA'
 
 --04.07
+
+select c.tipo,c.estado,u.cod_dpto,u.cod_prov,u.cod_dto from Contrato co
+inner join Cliente c on co.codcliente=c.codcliente
+inner join Zona z on c.codzona=z.codzona
+inner join Ubigeo u on z.codubigeo=u.codubigeo
+where c.tipo='P' and c.estado=0 and u.cod_dpto='15' and u.cod_prov='08' and u.cod_dto='01'
+
+begin tran
+	delete co
+	from Contrato co
+	inner join Cliente c on co.codcliente=c.codcliente
+	inner join Zona z on c.codzona=z.codzona
+	inner join Ubigeo u on z.codubigeo=u.codubigeo
+	where c.tipo='P' and c.estado=0 and u.cod_dpto='15' and u.cod_prov='08' and u.cod_dto='01'
+rollback
+
+--04.08
+begin tran
+update cli
+set    cli.numdoc='46173385',
+       cli.nombres='DOMITILA CAMILA',
+	   cli.ape_paterno='LOPEZ',
+	   cli.ape_materno='MORALES',
+	   cli.fec_nacimiento='1980-01-09',
+	   cli.sexo='F',
+	   cli.email='DOMITILA_LOPEZ@GMAIL.COM',
+	   cli.direccion='URB. LOS CIPRESES M-24'
+from Cliente cli 
+where codcliente=500
+rollback
+
+select * from Cliente
