@@ -132,7 +132,7 @@ begin tran
 	where c.tipo='P' and c.estado=0 and u.cod_dpto='15' and u.cod_prov='08' and u.cod_dto='01'
 rollback
 
---04.08
+--04.09
 begin tran
 update cli
 set    cli.numdoc='46173385',
