@@ -57,3 +57,21 @@ case when (select count(codcliente) from Contrato co where co.codplan=p.codplan)
 end as MENSAJE
 from PlanInternet p
 order by [TOTAL] asc
+
+--05.05
+
+select cast(round(15*1.00/121,2) as decimal(5,2)) --Redondear al centésimo y convertir a decimal(5,2)
+
+--CONSULTA_PADRE
+select 
+replace(upper(nombre),' ','_') as [PLAN],--replace(expresión,valor_buscado,valor_mostrar)
+--CONSULTA_HIJA
+(select count(codcliente) from Contrato co where co.codplan=p.codplan) as [TOTAL-P],--Cuantos contratos son plan 1 (HIJA)
+--CONSULTA_HIJA
+(select count(codcliente) from Contrato) as [TOTAL],
+--CONSULTA_HIJA
+cast(round((select count(codcliente) from Contrato co where co.codplan=p.codplan)*100.00/
+	       (select count(codcliente) from Contrato),2)
+as decimal(5,2)) as PORCENTAJE
+from PlanInternet p
+order by PORCENTAJE desc
