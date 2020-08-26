@@ -37,3 +37,23 @@ select count(codcliente) as TOT_C,
 		left join Cliente c on co.codcliente=c.codcliente
 		where c.tipo is null) as TOT_C_O
 from   Contrato
+
+--05.03
+select count(codcliente) from Contrato where codplan=1 --Cuantos contratos son del plan 1
+select count(codcliente) from Contrato where codplan=2 --Cuantos contratos son del plan 2
+select count(codcliente) from Contrato where codplan=3 --Cuantos contratos son del plan 3
+select count(codcliente) from Contrato where codplan=13 --Cuantos contratos son del plan 13
+
+--CONSULTA_PADRE
+select replace(upper(nombre),' ','_') as [PLAN],--replace(expresión,valor_buscado,valor_mostrar)
+(select count(codcliente) from Contrato co where co.codplan=p.codplan) as [TOTAL],--Cuantos contratos son plan 1 (HIJA)
+case when (select count(codcliente) from Contrato co where co.codplan=p.codplan) between 0 and 99
+	 then 'Plan de baja demanda.'
+	 when (select count(codcliente) from Contrato co where co.codplan=p.codplan) between 100 and 199
+	 then 'Plan de mediana demanda.'
+	 when (select count(codcliente) from Contrato co where co.codplan=p.codplan)>=200
+	 then 'Plan de alta demanda.'
+	 else 'Sin mensaje'
+end as MENSAJE
+from PlanInternet p
+order by [TOTAL] asc
