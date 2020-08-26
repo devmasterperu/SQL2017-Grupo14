@@ -148,3 +148,59 @@ where codcliente=500
 rollback
 
 select * from Cliente
+
+--04.11
+--Crear columna nuevo_precio
+alter table Contrato add nuevo_precio decimal(8,2) null
+
+select top 1000 codcliente,codplan,precio,nuevo_precio,periodo from Contrato
+
+select top 1 codplan,nombre,preciorefsol from PlanInternet
+
+--Calcular columna nuevo_precio
+select * from PlanInternet
+
+/*
+	update co
+	set  co.nuevo_precio=0.95*p.preciorefsol --5% descuento sobre precio referencial del plan cto.			 
+	from Contrato co inner join
+	PlanInternet p on co.codplan=p.codplan
+	where co.codplan in (1,2,3,4,5,8) and co.periodo='Q'
+
+	update co
+	set  co.nuevo_precio=0.90*p.preciorefsol --5% descuento sobre precio referencial del plan cto.			 
+	from Contrato co inner join
+	PlanInternet p on co.codplan=p.codplan
+	where co.codplan in (1,2,3,4,5,8) and co.periodo='M'
+
+	update co
+	set  co.nuevo_precio=0.95*p.preciorefsol --5% descuento sobre precio referencial del plan cto.			 
+	from Contrato co inner join
+	PlanInternet p on co.codplan=p.codplan
+	where co.codplan in (1,2,3,4,5,8) and co.periodo='Q'
+*/
+
+begin tran
+	update co
+	set  co.nuevo_precio=case when co.codplan in (1,2,3,4,5,8) and co.periodo='Q'
+	                          then 0.95*p.preciorefsol --5% descuento sobre precio referencial del plan cto.
+							  when co.codplan in (1,2,3,4,5,8) and co.periodo='M'
+							  then 0.90*p.preciorefsol --10% descuento sobre precio referencial del plan cto.
+							  else 0.98*p.preciorefsol --2% descuento sobre precio referencial del plan cto.
+						  end
+	from Contrato co inner join
+	PlanInternet p on co.codplan=p.codplan
+rollback
+
+select top 1000 codcliente,codplan,precio,nuevo_precio,periodo from Contrato
+
+--Quiénes son los clientes a los cuales no les conviene este nuevo precio
+
+select codcliente,codplan,precio,nuevo_precio from Contrato
+where nuevo_precio>precio
+
+--Quiénes son los clientes detectados con un diferencial de S/50.00 a más entre el nuevo precio y el precio actual
+
+select codcliente,codplan,nuevo_precio,precio,nuevo_precio-precio as diferencial from Contrato
+where nuevo_precio-precio>=50
+
