@@ -77,3 +77,20 @@ cast(round((select count(codcliente) from Contrato co where co.codplan=p.codplan
 as decimal(5,2)) as PORCENTAJE
 from PlanInternet p
 order by PORCENTAJE desc
+
+--05.07
+
+--CONSULTA_PADRE
+select 
+replace(upper(nombre),' ','_') as [PLAN],--replace(expresión,valor_buscado,valor_mostrar)
+--CONSULTA_HIJA
+isnull((select count(codcliente) from Contrato co where co.codplan=p.codplan),0) as [CO-TOTAL],--Cuantos contratos x plan
+--CONSULTA_HIJA
+isnull((select avg(precio) from Contrato co where co.codplan=p.codplan),0) as [CO-PROM],--Monto promedio de precios x plan
+--CONSULTA_HIJA
+isnull((select min(fec_contrato) from Contrato co where co.codplan=p.codplan),'9999-12-31') as [CO-ANTIGUO],--Fecha contrato más antigua x plan
+--CONSULTA_HIJA
+isnull((select max(fec_contrato) from Contrato co where co.codplan=p.codplan),'9999-12-31') as [CO-RECIENTE]--Fecha contrato más reciente x plan
+from PlanInternet p
+order by [CO-TOTAL] desc
+
