@@ -279,10 +279,93 @@ select * from UF_resumen_cliente(401) --Retornó info
 --from Telefono 
 --group by codcliente,tipo
 
-select codcliente as CODIGO,razon_social as EMPRESA
-from Cliente c
+select c.codcliente as CODIGO,razon_social as EMPRESA,
+isnull(r_lla.total,0)+isnull(r_sms.total,0)+isnull(r_wsp.total,0) as [TOT-TE],
+isnull(r_lla.total,0) as [TOT-LLA],
+isnull(r_sms.total,0) as [TOT-SMS],
+isnull(r_wsp.total,0) as [TOT-WSP]
+from Cliente c 
+left join
 (
-  select codcliente,count(numero) from Telefono where tipo='LLA'
+  select codcliente,count(numero) as total 
+  from Telefono where tipo='LLA'
   group by codcliente
-) r_lla
+) r_lla on c.codcliente=r_lla.codcliente
+left join
+(
+  select codcliente,count(numero) as total 
+  from Telefono where tipo='SMS'
+  group by codcliente
+) r_sms on c.codcliente=r_sms.codcliente
+left join
+(
+  select codcliente,count(numero) as total 
+  from Telefono where tipo='WSP'
+  group by codcliente
+) r_wsp on c.codcliente=r_wsp.codcliente
 where tipo='E'
+
+--05.12
+
+--DETERMINAR precio promedio de los contratos activos
+select avg(precio) from Contrato where estado=1
+
+begin tran
+	update co
+	set precio=1000
+	from Contrato co
+	where periodo='M'
+rollback
+--DETERMINAR los contratos con precio actual mayor al precio promedio de los contratos activos.
+
+--SUBCONSULTAS
+select 
+case when c.tipo='E' then c.razon_social
+     when c.tipo='P' then c.nombres+' '+c.ape_paterno+' '+c.ape_materno
+	 else 'SIN DATO'
+end as CLIENTE,
+isnull(p.nombre,'SIN DATO') as [PLAN],
+isnull(co.fec_contrato,'9999-12-31') as [FECHA],
+isnull(co.precio,0.00) as [PRECIO],
+cast(round((select avg(precio) from Contrato where estado=1),2) as decimal(5,2)) as PROMEDIO,
+EOMONTH(getdate()) as F_CIERRE
+from Contrato co
+left join Cliente c on co.codcliente=c.codcliente
+left join PlanInternet p on co.codplan=p.codplan
+where precio>(select avg(precio) from Contrato where estado=1)
+
+--VISTAS
+
+create view V_resumen_contrato 
+as
+select 
+case when c.tipo='E' then c.razon_social
+     when c.tipo='P' then c.nombres+' '+c.ape_paterno+' '+c.ape_materno
+	 else 'SIN DATO'
+end as CLIENTE,
+isnull(p.nombre,'SIN DATO') as [PLAN],
+isnull(co.fec_contrato,'9999-12-31') as [FECHA],
+isnull(co.precio,0.00) as [PRECIO],
+cast(round((select avg(precio) from Contrato where estado=1),2) as decimal(5,2)) as PROMEDIO,
+EOMONTH(getdate()) as F_CIERRE
+from Contrato co
+left join Cliente c on co.codcliente=c.codcliente
+left join PlanInternet p on co.codplan=p.codplan
+where precio>(select avg(precio) from Contrato where estado=1)
+
+select * from V_resumen_contrato
+
+--FUNCION_VALOR_TABLA
+create function UF_resumen_contrato() returns table
+as return
+   select CLIENTE,[PLAN],PRECIO from V_resumen_contrato
+
+ select * from UF_resumen_contrato()
+ order by PRECIO desc
+
+--TABLAS_TEMPORALES
+
+select * into ##t_resumen_contrato
+from V_resumen_contrato
+
+select * from ##t_resumen_contrato
