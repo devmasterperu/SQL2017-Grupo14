@@ -138,4 +138,26 @@ from PlanInternet as p
 left join CTE_RP  as rp on p.codplan= rp.codplan
 order by [CO-TOTAL] desc
 
+--05.09
 
+select c.codcliente as [COD-CODCLIENTE],
+concat(nombres,' ',ape_paterno,' ',ape_materno) as [CLIENTE],
+isnull(rt.total,0) as [TOT-TE],
+isnull(rc.total,0) as [TOT-CO]
+from Cliente c
+left join
+(
+	select codcliente,count(numero) as total
+	from Telefono
+	where estado=1
+	group by codcliente
+) rt on c.codcliente=rt.codcliente
+left join 
+(
+	select codcliente,count(codplan) as total
+	from Contrato
+	where estado=1
+	group by codcliente
+) rc on c.codcliente=rc.codcliente
+where tipo='P'
+order by [TOT-TE] asc,[TOT-CO]
