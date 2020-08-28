@@ -140,6 +140,7 @@ order by [CO-TOTAL] desc
 
 --05.09
 
+--TABLAS_DERIVADAS
 select c.codcliente as [COD-CODCLIENTE],
 concat(nombres,' ',ape_paterno,' ',ape_materno) as [CLIENTE],
 isnull(rt.total,0) as [TOT-TE],
@@ -161,3 +162,127 @@ left join
 ) rc on c.codcliente=rc.codcliente
 where tipo='P'
 order by [TOT-TE] asc,[TOT-CO]
+
+--CTES
+WITH CTE_RT AS
+(
+	select codcliente,count(numero) as total
+	from Telefono
+	where estado=1
+	group by codcliente
+),  CTE_RC AS
+(
+	select codcliente,count(codplan) as total
+	from Contrato
+	where estado=1
+	group by codcliente
+)
+select c.codcliente as [COD-CODCLIENTE],
+concat(nombres,' ',ape_paterno,' ',ape_materno) as [CLIENTE],
+isnull(rt.total,0) as [TOT-TE],
+isnull(rc.total,0) as [TOT-CO]
+from Cliente c
+left join CTE_RT as rt on c.codcliente=rt.codcliente
+left join CTE_RC as rc on c.codcliente=rc.codcliente
+where tipo='P'
+order by [TOT-TE] asc,[TOT-CO]
+
+--VISTAS+TABLA_DERIVADA
+create view V_resumen_cliente_1 --Crear una vista
+as
+select c.codcliente as [COD-CODCLIENTE],
+concat(nombres,' ',ape_paterno,' ',ape_materno) as [CLIENTE],
+isnull(rt.total,0) as [TOT-TE],
+isnull(rc.total,0) as [TOT-CO]
+from Cliente c
+left join
+(
+	select codcliente,count(numero) as total
+	from Telefono
+	where estado=1
+	group by codcliente
+) rt on c.codcliente=rt.codcliente
+left join 
+(
+	select codcliente,count(codplan) as total
+	from Contrato
+	where estado=1
+	group by codcliente
+) rc on c.codcliente=rc.codcliente
+where tipo='P'
+
+select * from V_resumen_cliente_1
+
+--VISTAS+CTES
+alter view V_resumen_cliente_2 --Modificar una Vista
+as
+WITH CTE_RT AS
+(
+	select codcliente,count(numero) as total
+	from Telefono
+	where estado=1
+	group by codcliente
+),  CTE_RC AS
+(
+	select codcliente,count(codplan) as total
+	from Contrato
+	where estado=1
+	group by codcliente
+)
+select c.codcliente as [COD-CODCLIENTE],
+--concat(nombres,' ',ape_paterno,' ',ape_materno) as [CLIENTE],
+isnull(rt.total,0) as [TOT-TE],
+isnull(rc.total,0) as [TOT-CO]
+from Cliente c
+left join CTE_RT as rt on c.codcliente=rt.codcliente
+left join CTE_RC as rc on c.codcliente=rc.codcliente
+where tipo='P'
+
+select * from V_resumen_cliente_2
+order by [TOT-TE] asc,[TOT-CO]
+
+drop view V_resumen_cliente_2
+
+--FUNCION_VALOR_TABLA
+create function UF_resumen_cliente (@COD_CLIENTE int) returns table as --Crear función de tabla
+alter  function UF_resumen_cliente (@COD_CLIENTE int) returns table as --Modificar función de tabla
+drop   function UF_resumen_cliente --Eliminar función de tabla
+return
+	WITH CTE_RT AS
+	(
+		select codcliente,count(numero) as total
+		from Telefono
+		where estado=1
+		group by codcliente
+	),  CTE_RC AS
+	(
+		select codcliente,count(codplan) as total
+		from Contrato
+		where estado=1
+		group by codcliente
+	)
+	select c.codcliente as [COD-CODCLIENTE],
+	--concat(nombres,' ',ape_paterno,' ',ape_materno) as [CLIENTE],
+	isnull(rt.total,0) as [TOT-TE],
+	isnull(rc.total,0) as [TOT-CO]
+	from Cliente c
+	left join CTE_RT as rt on c.codcliente=rt.codcliente
+	left join CTE_RC as rc on c.codcliente=rc.codcliente
+	where tipo='P' and c.codcliente=@COD_CLIENTE
+
+select * from UF_resumen_cliente(100) --Retornó vacío
+select * from UF_resumen_cliente(401) --Retornó info
+
+--05.10
+
+--select codcliente,tipo,count(numero)
+--from Telefono 
+--group by codcliente,tipo
+
+select codcliente as CODIGO,razon_social as EMPRESA
+from Cliente c
+(
+  select codcliente,count(numero) from Telefono where tipo='LLA'
+  group by codcliente
+) r_lla
+where tipo='E'
