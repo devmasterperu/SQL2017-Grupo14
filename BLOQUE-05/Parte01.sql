@@ -80,6 +80,8 @@ order by PORCENTAJE desc
 
 --05.07
 
+--SUBCONSULTAS_SELECT:
+
 --CONSULTA_PADRE
 select 
 replace(upper(nombre),' ','_') as [PLAN],--replace(expresión,valor_buscado,valor_mostrar)
@@ -93,4 +95,47 @@ isnull((select min(fec_contrato) from Contrato co where co.codplan=p.codplan),'9
 isnull((select max(fec_contrato) from Contrato co where co.codplan=p.codplan),'9999-12-31') as [CO-RECIENTE]--Fecha contrato más reciente x plan
 from PlanInternet p
 order by [CO-TOTAL] desc
+
+--SUBCONSULTAS_FROM:
+
+select 
+replace(upper(nombre),' ','_') as [PLAN],--replace(expresión,valor_buscado,valor_mostrar)
+--CONSULTA_HIJA
+isnull(rp.total,0) as [CO-TOTAL],--Cuantos contratos x plan
+--CONSULTA_HIJA
+isnull(rp.promedio,0) as [CO-PROM],--Monto promedio de precios x plan
+--CONSULTA_HIJA
+isnull(rp.minimo,'9999-12-31') as [CO-ANTIGUO],--Fecha contrato más antigua x plan
+--CONSULTA_HIJA
+isnull(rp.maximo,'9999-12-31') as [CO-RECIENTE]--Fecha contrato más reciente x plan
+from PlanInternet p 
+left join
+(
+select codplan,count(codcliente) as total,avg(precio) as promedio,min(fec_contrato) as minimo,max(fec_contrato) as maximo
+from Contrato
+group by codplan
+) rp on p.codplan= rp.codplan
+order by [CO-TOTAL] desc
+
+--CTES
+WITH CTE_RP AS --CTE_NAME
+(	--INNER_QUERY
+	select codplan,count(codcliente) as total,avg(precio) as promedio,min(fec_contrato) as minimo,max(fec_contrato) as maximo
+	from Contrato
+	group by codplan
+)   --OUTER_QUERY
+select 
+replace(upper(nombre),' ','_') as [PLAN],--replace(expresión,valor_buscado,valor_mostrar)
+--CONSULTA_HIJA
+isnull(rp.total,0) as [CO-TOTAL],--Cuantos contratos x plan
+--CONSULTA_HIJA
+isnull(rp.promedio,0) as [CO-PROM],--Monto promedio de precios x plan
+--CONSULTA_HIJA
+isnull(rp.minimo,'9999-12-31') as [CO-ANTIGUO],--Fecha contrato más antigua x plan
+--CONSULTA_HIJA
+isnull(rp.maximo,'9999-12-31') as [CO-RECIENTE]--Fecha contrato más reciente x plan
+from PlanInternet as p 
+left join CTE_RP  as rp on p.codplan= rp.codplan
+order by [CO-TOTAL] desc
+
 
