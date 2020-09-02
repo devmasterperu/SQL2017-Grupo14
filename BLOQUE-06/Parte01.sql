@@ -62,3 +62,42 @@ return
 
 select * from F_CLIENTE_E()
 order by fec_inicio asc
+
+--06.05
+--TABLAS_DERIVADAS
+select c.codcliente as CODIGO,
+concat(c.nombres,' ',c.ape_paterno,' ',c.ape_materno) as CLIENTE, 
+codzona as ZONA,
+isnull(rt.total,0) as N_TEL,
+row_number() over(partition by codzona order by rt.total asc) as R1,
+rank() over(partition by codzona order by rt.total asc) as R2,
+dense_rank() over(partition by codzona order by rt.total asc) as R3,
+ntile(4) over(partition by codzona order by rt.total asc) as R4
+from Cliente c
+left join (
+	select codcliente,count(numero) as total
+	from Telefono
+	group by codcliente
+) rt on c.codcliente=rt.codcliente
+where tipo='P'
+order by codzona,rt.total asc
+
+--CTES
+WITH CTE_RT AS
+(
+	select codcliente,count(numero) as total
+	from Telefono
+	group by codcliente
+) 
+select c.codcliente as CODIGO,
+concat(c.nombres,' ',c.ape_paterno,' ',c.ape_materno) as CLIENTE, 
+codzona as ZONA,
+isnull(rt.total,0) as N_TEL,
+row_number() over(partition by codzona order by rt.total asc) as R1,
+rank() over(partition by codzona order by rt.total asc) as R2,
+dense_rank() over(partition by codzona order by rt.total asc) as R3,
+ntile(4) over(partition by codzona order by rt.total asc) as R4
+from Cliente c
+left join CTE_RT rt on c.codcliente=rt.codcliente
+where tipo='P'
+order by codzona,rt.total asc
