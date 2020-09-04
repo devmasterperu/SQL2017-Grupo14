@@ -181,3 +181,40 @@ select * from Ubigeo where codubigeo=18
 
 execute usp_InsUbigeo @nom_prov='CORONEL PORTILLO',@cod_dto='01',@nom_dto='CALLERIA',
 					  @cod_dpto='25',@nom_dpto='UCAYALI',@cod_prov='01' --2° VEZ=>NO_OK
+
+--07.08
+
+create procedure usp_ActualizaClienteE(
+@codcliente int, --Identificador
+--Valores_cambio
+@codtipo int,@numdoc varchar(16),
+@razon_social varchar(250),@fecinicio date,@email varchar(320),
+@direccion varchar(150),@codzona int,@estado bit)
+as
+begin
+	if exists(select numdoc from Cliente where codcliente=@codcliente and tipo='E') --SI EXISTE CLIENTE Y ES EMPRESA.
+	begin
+		--begin tran
+			update c
+			set  c.codtipo=@codtipo,c.numdoc=@numdoc,c.razon_social=@razon_social,c.fec_inicio=@fecinicio,
+				 c.email=@email,c.direccion=@direccion,c.codzona=@codzona,estado=@estado
+			from Cliente c
+			where c.codcliente=@codcliente
+		--rollback
+			select 'Cliente empresa actualizado' as mensaje,@codcliente as codcliente
+	end
+	else
+	begin
+		select 'No es posible identificar al cliente empresa a actualizar' as mensaje,@codcliente as codcliente
+	end
+end
+
+select top 1 * from Cliente where tipo='E'
+
+execute usp_ActualizaClienteE @codcliente=1,@codtipo=3,@numdoc='89918073990',@razon_social='DEV MASTER PERÚ',
+@fecinicio='2017-08-05',@email='info@devmaster.pe',@direccion='AV. BRASIL 900',@codzona=11,@estado=0 --OK
+
+select top 1 * from Cliente where tipo='P'
+
+execute usp_ActualizaClienteE @codcliente=401,@codtipo=3,@numdoc='89918073990',@razon_social='DEV MASTER PERÚ',
+@fecinicio='2017-08-05',@email='info@devmaster.pe',@direccion='AV. BRASIL 900',@codzona=11,@estado=0 --NO_OK
