@@ -82,3 +82,102 @@ begin
 end
 
 EXECUTE USP_REPORTE_TEL_2 @tipo= 'LLA'
+
+--07.05
+
+--Crear tabla Configuración (Guardar parámetros)
+
+create table dbo.Configuracion
+(
+codconfiguracion int identity(1,1) primary key,
+variable varchar(400)  not null,
+valor    varchar(1000) not null
+)
+
+insert into dbo.Configuracion(variable,valor)
+values ('RAZON_SOCIAL_DEVWIFI','DEV MASTER PERÚ SAC')
+
+insert into dbo.Configuracion(variable,valor)
+values ('RUC_DEVWIFI','20602275320')
+
+select variable,valor from dbo.Configuracion
+
+create procedure usp_selCliente(@idcliente int) as
+begin
+		--declare @idcliente int=2000
+		
+		if exists(select numdoc from Cliente where codcliente=@idcliente)--SI EXISTE CLIENTE
+		begin
+		
+			select 'RAZON_SOCIAL_DEVWIFI'=(select valor from Configuracion where variable='RAZON_SOCIAL_DEVWIFI'),
+			       'RUC_DEVWIFI'=(select valor from Configuracion where variable='RUC_DEVWIFI'),--20602275320
+				   'Consulta al:'=getdate(),
+				   'Cliente:'= case when tipo='P' then concat(nombres,' ',ape_paterno,' ',ape_materno)
+									when tipo='E' then razon_social
+									else 'SIN DETALLE'
+								end,
+					'Dirección:'=direccion,
+					'Zona:'=isnull(z.nombre,'SIN DETALLE')
+			from    Cliente c
+			left join Zona z on c.codzona=z.codzona
+			where   codcliente=@idcliente
+
+		end
+		else
+		begin
+			
+			select 'El cliente no ha sido encontrado en la Base de Datos' as mensaje
+		end
+
+end
+
+--RAZON_SOCIAL_DEVWIFI	RUC_DEVWIFI	Consulta al:	      Cliente:	Dirección:	                Zona:
+--DEV MASTER PERÚ SAC	20602275320	2020-09-03 20:43:14.370	EMPRESA 100	URB. LOS CIPRESES M-24	AMBAR-I
+execute usp_selCliente @idcliente=100
+
+--RAZON_SOCIAL_DEVWIFI	RUC_DEVWIFI	Consulta al:	        Cliente:	                Dirección:	                Zona:
+--DEV MASTER PERÚ SAC	20602275320	2020-09-03 20:43:46.697	SONIA DE  LA TORRE CANALES	AV. AV. CIRCUNVALACION S\N	HUACHO-IV
+execute usp_selCliente @idcliente=600
+
+--mensaje
+--El cliente no ha sido encontrado en la Base de Datos
+execute usp_selCliente @idcliente=2000
+
+--RAZON_SOCIAL_DEVWIFI	                RUC_DEVWIFI	Consulta al:	        Cliente:	                Dirección:	                Zona:
+--DEV MASTER PERÚ INTERNTATIONAL EIRL 	20602275320	2020-09-03 20:45:55.297	SONIA DE  LA TORRE CANALES	AV. AV. CIRCUNVALACION S\N	HUACHO-IV
+execute usp_selCliente @idcliente=600
+
+--07.06
+
+create procedure usp_InsUbigeo
+(
+@cod_dpto varchar(3),
+@nom_dpto varchar(50),
+@cod_prov varchar(4),
+@nom_prov varchar(50),
+@cod_dto  varchar(4),
+@nom_dto  varchar(80)
+) as
+begin
+
+	if not exists(select codubigeo from Ubigeo where cod_dpto=@cod_dpto and 
+	              cod_prov=@cod_prov and cod_dto=@cod_dto)--NO EXISTA UBIGEO
+	begin
+		insert into Ubigeo(cod_dpto,nombre_dpto,cod_prov,nombre_prov,cod_dto,nombre_dto)
+		            values(@cod_dpto,@nom_dpto,@cod_prov,@nom_prov,@cod_dto,@nom_dto)
+
+		select 'Ubigeo insertado' as mensaje,IDENT_CURRENT('dbo.Ubigeo') as codubigeo
+	end
+	else --SI EXISTA UBIGEO
+	begin
+		select 'Ubigeo existente' as mensaje,0 as codubigeo
+	end
+end
+
+execute usp_InsUbigeo @nom_prov='CORONEL PORTILLO',@cod_dto='01',@nom_dto='CALLERIA',
+					  @cod_dpto='25',@nom_dpto='UCAYALI',@cod_prov='01' --1° VEZ=>OK
+
+select * from Ubigeo where codubigeo=18
+
+execute usp_InsUbigeo @nom_prov='CORONEL PORTILLO',@cod_dto='01',@nom_dto='CALLERIA',
+					  @cod_dpto='25',@nom_dpto='UCAYALI',@cod_prov='01' --2° VEZ=>NO_OK
