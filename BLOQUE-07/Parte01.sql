@@ -218,3 +218,30 @@ select top 1 * from Cliente where tipo='P'
 
 execute usp_ActualizaClienteE @codcliente=401,@codtipo=3,@numdoc='89918073990',@razon_social='DEV MASTER PERÚ',
 @fecinicio='2017-08-05',@email='info@devmaster.pe',@direccion='AV. BRASIL 900',@codzona=11,@estado=0 --NO_OK
+
+--07.10
+
+create procedure usp_EliminaTelefono(@tipo varchar(4),@numero varchar(25))
+as
+begin
+	--Validar teléfono existe por tipo y número
+	if exists(select codcliente from Telefono where tipo=@tipo and numero=@numero)
+	begin
+		delete from Telefono
+		where tipo=@tipo and numero=@numero 
+
+		select 'Teléfono eliminado' as mensaje,@tipo as tipo,@numero as numero
+	end
+	else
+	begin
+		select 'No es posible identificar al teléfono a eliminar' as mensaje,'TTT' as tipo,
+		       '999999999' as numero
+	end
+end
+
+select top 100 * from Telefono
+execute usp_EliminaTelefono @tipo='LLA',@numero='915703551'
+
+select  * from Telefono where tipo='LLA' and numero='915703551' --OK
+
+execute usp_EliminaTelefono @tipo='SMS2',@numero='915703551'
